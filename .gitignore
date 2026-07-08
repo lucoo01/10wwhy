@@ -12,3 +12,14 @@ $RECYCLE.BIN/
 .idea/
 *.swp
 *~
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 数据集流水线(本地数据处理工作区,勿提交)
+_ds_info.json
+_pipeline/
