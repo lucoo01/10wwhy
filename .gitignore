@@ -23,3 +23,17 @@ venv/
 # 数据集流水线(本地数据处理工作区,勿提交)
 _ds_info.json
 _pipeline/
+
+# 本地生成的数据库文件
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# API 凭证(本地)
+.env
+
+# review 流水线临时产物
+review_run.log
+review_run.err
+review_failures.jsonl
