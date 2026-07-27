@@ -36,4 +36,6 @@ _pipeline/
 # review 流水线临时产物
 review_run.log
 review_run.err
+review_retry.log
+review_retry.err
 review_failures.jsonl
