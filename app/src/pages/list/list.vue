@@ -1,16 +1,26 @@
 <template>
   <view :class="['page', { dark: isDark }]">
-    <view
-      v-for="item in visible"
-      :key="item.id"
-      class="item card"
-      @click="goDetail(item)"
-    >
-      <text class="q">{{ item.q }}</text>
-      <text v-if="isLiked(item.id)" class="like-flag">❤️</text>
+    <view class="list fade-up">
+      <view
+        v-for="(item, i) in visible"
+        :key="item.id"
+        class="row"
+        @click="goDetail(item)"
+      >
+        <view class="row-no">
+          <text class="no">NO.</text>
+          <text class="no no-num">{{ i + 1 }}</text>
+        </view>
+        <text class="q">{{ item.q }}</text>
+        <text v-if="isLiked(item.id)" class="like-flag">♥︎</text>
+      </view>
     </view>
     <view v-if="loading" class="tip text-secondary">加载中…</view>
-    <view v-else-if="visible.length >= total" class="tip text-secondary">— 到底了 —</view>
+    <view v-else-if="visible.length >= total" class="end">
+      <view class="end-line"></view>
+      <text class="end-text text-secondary">已到尽头 · 共 {{ total }} 问</text>
+      <view class="end-line"></view>
+    </view>
   </view>
 </template>
 
@@ -54,10 +64,21 @@ function goDetail(item) {
 </script>
 
 <style scoped>
-.item {
-  margin: 16rpx 24rpx 0; padding: 28rpx; font-size: 30rpx; line-height: 1.6;
-  display: flex; justify-content: space-between; align-items: center; gap: 16rpx;
+.list { background: var(--card); margin: 24rpx 32rpx; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+.row {
+  display: flex; align-items: center; gap: 20rpx;
+  padding: 30rpx 32rpx;
+  border-bottom: 1px solid var(--border);
 }
-.q { flex: 1; }
+.row:last-child { border-bottom: none; }
+.row:active { background: var(--accent-soft); }
+.row-no { display: flex; flex-direction: column; align-items: flex-start; min-width: 72rpx; }
+.no-num { font-size: 30rpx; color: var(--text); opacity: 0.55; }
+.q { flex: 1; font-size: 30rpx; line-height: 1.6; }
+.like-flag { font-size: 28rpx; color: var(--accent); }
+
 .tip { text-align: center; padding: 32rpx; font-size: 26rpx; }
+.end { display: flex; align-items: center; gap: 24rpx; padding: 40rpx 64rpx calc(40rpx + env(safe-area-inset-bottom)); }
+.end-line { flex: 1; height: 1px; background: var(--border); }
+.end-text { font-size: 22rpx; letter-spacing: 2rpx; }
 </style>

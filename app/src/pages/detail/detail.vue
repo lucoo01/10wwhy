@@ -4,18 +4,29 @@
     @touchstart="onTouchStart"
     @touchend="onTouchEnd"
   >
-    <view v-if="item" class="content">
-      <view class="meta text-secondary">{{ groupName }} · 第 {{ pos + 1 }} / {{ total }} 条</view>
-      <view class="q card">{{ item.q }}</view>
+    <view v-if="item" class="content fade-up" :key="item.id">
+      <view class="chip">
+        <text class="chip-text">{{ groupName }} · {{ pos + 1 }} / {{ total }}</text>
+      </view>
+      <view class="quote-wrap">
+        <text class="quote-mark font-serif">“</text>
+        <text class="q font-serif">{{ item.q }}</text>
+      </view>
       <view class="actions">
-        <button class="btn" @click="onFav">{{ fav ? '★ 已收藏' : '☆ 收藏' }}</button>
-        <button class="btn" @click="onLike">{{ liked ? '❤️ 已赞' : '🤍 点赞' }}</button>
+        <view :class="['icon-btn', 'press', { on: fav }]" @click="onFav">
+          <text class="icon">{{ fav ? '★︎' : '☆︎' }}</text>
+          <text class="icon-label">{{ fav ? '已收藏' : '收藏' }}</text>
+        </view>
+        <view :class="['icon-btn', 'press', { on: liked }]" @click="onLike">
+          <text class="icon icon-heart">{{ liked ? '♥︎' : '♡︎' }}</text>
+          <text class="icon-label">{{ liked ? '已赞' : '点赞' }}</text>
+        </view>
       </view>
       <view class="nav">
-        <button class="btn nav-btn" :disabled="pos <= 0" @click="go(pos - 1)">← 上一题</button>
-        <button class="btn nav-btn" :disabled="pos >= total - 1" @click="go(pos + 1)">下一题 →</button>
+        <button class="btn-outline nav-btn press" :disabled="pos <= 0" @click="go(pos - 1)">← 上一题</button>
+        <button class="btn-outline nav-btn press" :disabled="pos >= total - 1" @click="go(pos + 1)">下一题 →</button>
       </view>
-      <view class="tip text-secondary">左右滑动切换问题</view>
+      <view class="tip text-secondary">← 左右滑动切换问题 →</view>
     </view>
     <view v-else class="tip text-secondary">加载中…</view>
   </view>
@@ -72,14 +83,54 @@ function onTouchEnd(e) {
 </script>
 
 <style scoped>
-.content { padding: 32rpx 24rpx; display: flex; flex-direction: column; gap: 32rpx; }
-.meta { font-size: 26rpx; }
-.q { padding: 48rpx 36rpx; font-size: 40rpx; line-height: 1.7; font-weight: 600; }
-.actions, .nav { display: flex; gap: 20rpx; }
-.btn {
-  flex: 1; font-size: 30rpx; border-radius: 16rpx; background: var(--card);
-  color: var(--text); border: 1px solid var(--border); padding: 8rpx 0;
+.content {
+  padding: 48rpx 40rpx calc(40rpx + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; align-items: center; gap: 48rpx;
 }
-.btn[disabled] { opacity: 0.4; }
-.tip { text-align: center; font-size: 24rpx; padding: 24rpx; }
+.chip {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-full);
+  padding: 8rpx 28rpx;
+}
+.chip-text { color: var(--accent); font-size: 24rpx; letter-spacing: 2rpx; }
+
+.quote-wrap { position: relative; width: 100%; padding-top: 48rpx; }
+.quote-mark {
+  position: absolute; top: -28rpx; left: -8rpx;
+  font-size: 120rpx; line-height: 1;
+  color: var(--accent); opacity: 0.18;
+}
+.q {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 600;
+  line-height: 1.8;
+  text-align: center;
+  letter-spacing: 2rpx;
+}
+
+.actions { display: flex; gap: 64rpx; }
+.icon-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8rpx;
+  width: 128rpx; height: 128rpx;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  justify-content: center;
+}
+.icon-btn.on { background: var(--accent-soft); border-color: var(--accent-border); }
+.icon { font-size: 44rpx; line-height: 1; }
+.icon-heart { font-size: 40rpx; }
+.icon-btn.on .icon { color: var(--accent); }
+.icon-label { font-size: 22rpx; color: var(--text-secondary); }
+.icon-btn.on .icon-label { color: var(--accent); }
+
+.nav { display: flex; gap: 20rpx; width: 100%; }
+.nav-btn { flex: 1; padding: 0; }
+.nav-btn[disabled] { opacity: 0.45; }
+.page.dark .quote-mark { opacity: 0.28; }
+
+.tip { font-size: 22rpx; letter-spacing: 2rpx; }
 </style>

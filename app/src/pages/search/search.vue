@@ -1,27 +1,35 @@
 <template>
   <view :class="['page', { dark: isDark }]">
-    <view class="bar">
+    <view class="bar fade-up">
       <input
-        class="input card"
+        class="input press"
         v-model="keyword"
-        placeholder="输入关键词"
+        placeholder="输入关键词…"
         confirm-type="search"
         @confirm="doSearch"
       />
       <picker mode="selector" :range="groupNames" :value="pickerIdx" @change="onGroupChange">
-        <view class="picker card">{{ currentGroupName }} ▾</view>
+        <view class="picker press">{{ currentGroupName }} ▾</view>
       </picker>
     </view>
-    <view v-if="searched && results.length === 0" class="tip text-secondary">无匹配结果</view>
-    <view
-      v-for="item in results"
-      :key="item.id"
-      class="item card"
-      @click="goDetail(item)"
-    >
-      {{ item.q }}
+    <view class="result fade-up-1">
+      <view v-if="searched && results.length === 0" class="empty">
+        <text class="empty-emoji">🔍</text>
+        <text class="empty-text text-secondary">没有找到「{{ keyword }}」相关问题</text>
+      </view>
+      <view
+        v-for="(item, i) in results"
+        :key="item.id"
+        class="item"
+        @click="goDetail(item)"
+      >
+        <text class="no no-num">{{ i + 1 }}</text>
+        <view class="q-wrap">
+          <text v-for="(seg, j) in highlight(item.q)" :key="j" :class="['q-seg', { hit: seg.hit }]">{{ seg.text }}</text>
+        </view>
+      </view>
+      <view v-if="results.length >= 200" class="tip text-secondary">仅显示前 200 条</view>
     </view>
-    <view v-if="results.length >= 200" class="tip text-secondary">仅显示前 200 条</view>
   </view>
 </template>
 
@@ -67,15 +75,52 @@ async function doSearch() {
   searched.value = true
 }
 
+// 把问题拆成 命中/未命中 片段，命中段渲染为 accent 色
+function highlight(q) {
+  const kw = keyword.value.trim()
+  const idx = kw ? q.indexOf(kw) : -1
+  if (idx < 0) return [{ text: q, hit: false }]
+  return [
+    { text: q.slice(0, idx), hit: false },
+    { text: kw, hit: true },
+    { text: q.slice(idx + kw.length), hit: false }
+  ].filter((s) => s.text)
+}
+
 function goDetail(item) {
   uni.navigateTo({ url: `/pages/detail/detail?groupId=${groupId.value}&pos=${item.pos}` })
 }
 </script>
 
 <style scoped>
-.bar { display: flex; gap: 16rpx; padding: 24rpx; }
-.input { flex: 1; padding: 16rpx 24rpx; font-size: 28rpx; color: var(--text); }
-.picker { padding: 16rpx 24rpx; font-size: 28rpx; white-space: nowrap; }
-.item { margin: 16rpx 24rpx 0; padding: 28rpx; font-size: 30rpx; line-height: 1.6; }
-.tip { text-align: center; padding: 48rpx; font-size: 26rpx; }
+.bar { display: flex; gap: 16rpx; padding: 24rpx 32rpx; }
+.input {
+  flex: 1; padding: 20rpx 32rpx; font-size: 28rpx; color: var(--text);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+}
+.input:focus { border-color: var(--accent); }
+.picker {
+  padding: 20rpx 28rpx; font-size: 26rpx; white-space: nowrap;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius-full); color: var(--text);
+}
+
+.result { background: var(--card); margin: 16rpx 32rpx; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+.item {
+  display: flex; align-items: baseline; gap: 20rpx;
+  padding: 28rpx 32rpx;
+  border-bottom: 1px solid var(--border);
+}
+.item:last-child { border-bottom: none; }
+.item:active { background: var(--accent-soft); }
+.no-num { min-width: 48rpx; }
+.q-wrap { flex: 1; font-size: 30rpx; line-height: 1.6; }
+.q-seg { color: var(--text); }
+.q-seg.hit { color: var(--accent); font-weight: 600; }
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: 16rpx; padding: 96rpx 0; }
+.empty-emoji { font-size: 64rpx; }
+.empty-text { font-size: 26rpx; }
+.tip { text-align: center; padding: 32rpx; font-size: 24rpx; background: var(--card); margin: 0 32rpx; border-radius: var(--radius-lg); }
 </style>

@@ -7,6 +7,8 @@
     "transformPx" : false,
     /* 5+App特有相关 */
     "app-plus" : {
+        "darkmode" : true,
+        "themeLocation" : "theme.json",
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
         "compilerVersion" : 3,
@@ -65,7 +67,12 @@
     "mp-toutiao" : {
         "usingComponents" : true
     },
-    "uniStatistics": {  
+    /* H5特有相关 */
+    "h5" : {
+        "darkmode" : true,
+        "themeLocation" : "theme.json"
+    },
+    "uniStatistics": {
         "enable": false
     },
     "vueVersion" : "3"
