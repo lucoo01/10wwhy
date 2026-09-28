@@ -39,3 +39,8 @@ review_run.err
 review_retry.log
 review_retry.err
 review_failures.jsonl
+
+# app
+app/node_modules/
+app/dist/
+app/src/static/data/
