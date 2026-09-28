@@ -65,6 +65,7 @@ export async function loadGroup(groupId) {
 
 // 取某分组内第 pos 条（0 基），自动加载所在分片
 export async function getAt(groupId, pos) {
+  if (!Number.isInteger(pos) || pos < 0) return null
   const g = groupCache[groupId]
   const shardNo = Math.floor(pos / 5000)
   const shard = await loadShard(groupId, shardNo)

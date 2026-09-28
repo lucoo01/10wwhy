@@ -46,7 +46,10 @@ onReachBottom(() => {
 })
 
 function goDetail(item) {
-  uni.navigateTo({ url: `/pages/detail/detail?groupId=${groupId}&pos=${item.pos !== undefined ? item.pos : all.indexOf(item)}` })
+  // 列表项经响应式代理后引用会变，按 id 定位下标
+  const pos = item.pos !== undefined ? item.pos : all.findIndex((x) => x.id === item.id)
+  if (pos < 0) return
+  uni.navigateTo({ url: `/pages/detail/detail?groupId=${groupId}&pos=${pos}` })
 }
 </script>
 
