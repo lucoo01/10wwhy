@@ -44,3 +44,4 @@ review_failures.jsonl
 app/node_modules/
 app/dist/
 app/src/static/data/
+certs/

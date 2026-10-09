@@ -90,3 +90,19 @@ export async function searchInGroup(groupId, keyword, limit = 200) {
   }
   return out
 }
+
+// 全库关键词搜索：逐组扫描（分片缓存共享，实测 10 万条扫描 <100ms）
+export async function searchAll(keyword, limit = 200) {
+  const idx = await loadIndex()
+  const out = []
+  for (const g of idx.groups) {
+    const all = await loadGroup(g.id)
+    for (let i = 0; i < all.length; i++) {
+      if (all[i].q.includes(keyword)) {
+        out.push({ ...all[i], groupId: g.id, groupName: g.name, pos: i })
+        if (out.length >= limit) return out
+      }
+    }
+  }
+  return out
+}

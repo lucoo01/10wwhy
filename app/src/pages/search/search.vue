@@ -4,7 +4,7 @@
       <input
         class="input press"
         v-model="keyword"
-        placeholder="输入关键词…"
+        :placeholder="`全库搜索 ${totalCount.toLocaleString()} 个问题…`"
         confirm-type="search"
         @confirm="doSearch"
       />
@@ -25,7 +25,12 @@
       >
         <text class="no no-num">{{ i + 1 }}</text>
         <view class="q-wrap">
-          <text v-for="(seg, j) in highlight(item.q)" :key="j" :class="['q-seg', { hit: seg.hit }]">{{ seg.text }}</text>
+          <view class="q-meta">
+            <text class="q-group">{{ item.groupName }}</text>
+          </view>
+          <view class="q-line">
+            <text v-for="(seg, j) in highlight(item.q)" :key="j" :class="['q-seg', { hit: seg.hit }]">{{ seg.text }}</text>
+          </view>
         </view>
       </view>
       <view v-if="results.length >= 200" class="tip text-secondary">仅显示前 200 条</view>
@@ -36,28 +41,33 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { loadIndex, searchInGroup } from '@/common/db.js'
+import { loadIndex, searchInGroup, searchAll } from '@/common/db.js'
 import { isDark } from '@/common/theme.js'
 
+const ALL = 0 // 0 = 全部分类
 const keyword = ref('')
 const groups = ref([])
-const groupId = ref(0)
+const totalCount = ref(0)
+const groupId = ref(ALL)
 const results = ref([])
 const searched = ref(false)
 let timer = null
 
-const groupNames = computed(() => groups.value.map((g) => g.name))
-const pickerIdx = computed(() => groups.value.findIndex((g) => g.id === groupId.value))
-const currentGroupName = computed(() => groups.value[pickerIdx.value]?.name || '选择分类')
+const groupNames = computed(() => ['全部分类', ...groups.value.map((g) => g.name)])
+const pickerIdx = computed(() =>
+  groupId.value === ALL ? 0 : groups.value.findIndex((g) => g.id === groupId.value) + 1
+)
+const currentGroupName = computed(() => groupNames.value[pickerIdx.value] || '全部分类')
 
 onLoad(async () => {
   const idx = await loadIndex()
   groups.value = idx.groups
-  groupId.value = idx.groups[0].id
+  totalCount.value = idx.groups.reduce((s, g) => s + g.count, 0)
 })
 
 function onGroupChange(e) {
-  groupId.value = groups.value[Number(e.detail.value)].id
+  const i = Number(e.detail.value)
+  groupId.value = i === 0 ? ALL : groups.value[i - 1].id
   if (keyword.value.trim()) doSearch()
 }
 
@@ -71,7 +81,9 @@ watch(keyword, () => {
 async function doSearch() {
   const kw = keyword.value.trim()
   if (!kw) return
-  results.value = await searchInGroup(groupId.value, kw)
+  results.value = groupId.value === ALL
+    ? await searchAll(kw)
+    : await searchInGroup(groupId.value, kw)
   searched.value = true
 }
 
@@ -88,7 +100,8 @@ function highlight(q) {
 }
 
 function goDetail(item) {
-  uni.navigateTo({ url: `/pages/detail/detail?groupId=${groupId.value}&pos=${item.pos}` })
+  const gid = item.groupId || groupId.value
+  uni.navigateTo({ url: `/pages/detail/detail?groupId=${gid}&pos=${item.pos}` })
 }
 </script>
 
@@ -108,19 +121,27 @@ function goDetail(item) {
 
 .result { background: var(--card); margin: 16rpx 32rpx; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); overflow: hidden; }
 .item {
-  display: flex; align-items: baseline; gap: 20rpx;
+  display: flex; align-items: flex-start; gap: 20rpx;
   padding: 28rpx 32rpx;
   border-bottom: 1px solid var(--border);
 }
 .item:last-child { border-bottom: none; }
 .item:active { background: var(--accent-soft); }
-.no-num { min-width: 48rpx; }
-.q-wrap { flex: 1; font-size: 30rpx; line-height: 1.6; }
+.no-num { min-width: 48rpx; margin-top: 4rpx; }
+.q-wrap { flex: 1; display: flex; flex-direction: column; gap: 8rpx; }
+.q-meta { display: flex; }
+.q-group {
+  font-size: 20rpx; color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-full);
+  padding: 2rpx 16rpx;
+}
+.q-line { font-size: 30rpx; line-height: 1.6; }
 .q-seg { color: var(--text); }
 .q-seg.hit { color: var(--accent); font-weight: 600; }
 
 .empty { display: flex; flex-direction: column; align-items: center; gap: 16rpx; padding: 96rpx 0; }
 .empty-emoji { font-size: 64rpx; }
 .empty-text { font-size: 26rpx; }
-.tip { text-align: center; padding: 32rpx; font-size: 24rpx; background: var(--card); margin: 0 32rpx; border-radius: var(--radius-lg); }
+.tip { text-align: center; padding: 32rpx; font-size: 24rpx; }
 </style>
